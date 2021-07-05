@@ -32,10 +32,13 @@ public class MusicProcess {
         File mixPcmFile = new File(Environment.getExternalStorageDirectory(), "mix.pcm");
 
         decodeToPcm(videoInput, videoPcmFile.getAbsolutePath(), startTimeUs, endTimeUs);
+        decodeToPcm(audioInput, musicPcmFile.getAbsolutePath(), startTimeUs, endTimeUs);
 
         mixPcm(videoPcmFile.getAbsolutePath(), musicPcmFile.getAbsolutePath(), mixPcmFile.getAbsolutePath(), videoVolume, audioVolume);
         new PcmToWavUtil(44100, AudioFormat.CHANNEL_IN_STEREO, 2, AudioFormat.ENCODING_PCM_16BIT)
                 .pcmToWav(mixPcmFile.getAbsolutePath(), output);
+
+        Log.e(TAG, "mix audio complete");
     }
 
 
@@ -65,8 +68,8 @@ public class MusicProcess {
                 if (!end2) {
                     end2 = (is2.read(buffer2) == -1);
                     for (int i = 0; i < buffer2.length; i += 2) {  // 声音2个字节
-                        tmp1 = (short) ((buffer1[i] & 0xFF) | (buffer1[i + 1] & 0xFF << 8));
-                        tmp2 = (short) ((buffer2[i] & 0xFF) | (buffer2[i + 1] & 0xFF << 8));
+                        tmp1 = (short) ((buffer1[i] & 0xFF) | (buffer1[i + 1] & 0xFF) << 8);
+                        tmp2 = (short) ((buffer2[i] & 0xFF) | (buffer2[i + 1] & 0xFF) << 8);
                         sum = (int) (tmp1 * volume1 + tmp2 * volume2);
 
                         if (sum > MAX_VOLUME) {
@@ -74,6 +77,7 @@ public class MusicProcess {
                         } else if (sum < MIN_VOLUME) {
                             sum = MIN_VOLUME;
                         }
+                        Log.i(TAG, "mix audio: " + Integer.toHexString(sum));
                         outputBuffer[i] = (byte) (sum & 0xFF);
                         outputBuffer[i + 1] = (byte) ((sum >>> 8) & 0xFF);  //  >>> 无符号右移
                     }
@@ -96,6 +100,7 @@ public class MusicProcess {
             return;
         }
 
+        Log.e(TAG, "start to decode: " + inputPath);
         MediaExtractor mediaExtractor = new MediaExtractor();
         try {
             mediaExtractor.setDataSource(inputPath);
@@ -159,7 +164,7 @@ public class MusicProcess {
             mediaCodec.stop();
             mediaCodec.release();
 
-            Log.i(TAG, "decodeToPcm complete");
+            Log.e(TAG, "decodeToPcm complete");
 
         } catch (IOException e) {
             e.printStackTrace();

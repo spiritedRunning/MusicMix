@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                 FileUtils.copyAssets(mContext, "input.mp4", videoPath);
 
                 new MusicProcess().mixAudioTrack(mContext, videoPath, musicPath, mixMusicPath,
-                        10 * 1000 * 1000, 20 * 1000 * 1000, 100, 20);
+                        60 * 1000 * 1000, 70 * 1000 * 1000, 100, 15);
             }
         }).start();
 
